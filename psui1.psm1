@@ -49,7 +49,25 @@ function Write-UIText {
         [string]$message
     )
 
-    [System.Console]::Write($message)
+    [System.Console]::Write($message);
+}
+
+
+function Write-UIColoredText {
+    Param(
+        [Parameter(Mandatory=$true)]
+        [string]$message,
+        [string]$BackgroundColor = (Get-Host).UI.RawUI.BackgroundColor,
+        [string]$ForegroundColor = (Get-Host).UI.RawUI.ForegroundColor
+    )
+
+    $saved_background_color = (Get-Host).UI.RawUI.BackgroundColor
+    $saved_foreground_color = (Get-Host).UI.RawUI.ForegroundColor
+    (Get-Host).UI.RawUI.ForegroundColor = $ForegroundColor
+    (Get-Host).UI.RawUI.BackgroundColor = $BackgroundColor
+    [System.Console]::Write($message);
+    (Get-Host).UI.RawUI.ForegroundColor = $saved_foreground_color
+    (Get-Host).UI.RawUI.BackgroundColor = $saved_background_color
 }
 
 
