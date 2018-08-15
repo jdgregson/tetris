@@ -200,6 +200,24 @@ function Get-UICursorPositionY {
 }
 
 
+function Get-UIColorsAtPosition {
+    Param(
+        [Parameter(Mandatory=$true)]
+        [int]$x,
+        [Parameter(Mandatory=$true)]
+        [int]$y
+    )
+
+    $colors = (Get-Host).UI.RawUI.GetBufferContents(@{
+        Left=$x; Right=$x; Top=$y; Bottom=$y;
+    })
+    return @{
+        ForegroundColor=$colors.ForegroundColor;
+        BackgroundColor=$colors.BackgroundColor;
+    }
+}
+
+
 function Set-UIBufferSize {
     Param(
         [int]$width = 0,
