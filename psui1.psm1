@@ -1,4 +1,3 @@
-
 # psui1 - a text-based user interface module for PowerShell
 # Copyright (C) 2018 - jdgregson
 # License: GNU GPLv3
@@ -235,10 +234,19 @@ function Set-UICursorPosition {
         [int]$y = 0
     )
 
+    if($x -lt 0) {$x = 0}
+    if($x -ge (Get-UIConsoleWidth)) {$x = (Get-UIConsoleWidth) - 1}
+    if($y -lt 0) {$y = 0}
+    if($y -ge (Get-UIConsoleHeight)) {$y = (Get-UIConsoleHeight) - 1}
+
     $saved_position = (Get-Host).UI.RawUI.CursorPosition
     $saved_position.X = $x
     $saved_position.Y = $y
-    (Get-Host).UI.RawUI.CursorPosition = $saved_position
+    try {
+        (Get-Host).UI.RawUI.CursorPosition = $saved_position
+    } catch {
+        Throw "The cursor position $saved_position is out of bounds."
+    }
 }
 
 
