@@ -182,6 +182,40 @@ function Write-UINewLine {
 }
 
 
+function Write-UIBorder {
+    Param(
+        [int]$height = 0,
+        [int]$width = 0,
+        [int]$StartX = 0,
+        [int]$StartY = 0,
+        [string]$BorderCharacter = " "
+    )
+
+    if($height -and $width) {
+        Throw "Cannot specify both height and width"
+    }
+
+    $original_position_x = (Get-UICursorPositionX)
+    $original_position_y = (Get-UICursorPositionX)
+    Set-UICursorPosition -x $StartX -y $StartY
+    if($height) {
+        While(((Get-UICursorPositionY) + $StartY) -lt $height) {
+            Write-UITextInverted $BorderCharacter
+            Set-UICursorPosition -x $StartX -y ((Get-UICursorPositionY) + 1)
+        }
+    } elseif($width) {
+        While(((Get-UICursorPositionX) + $StartX) -lt $width) {
+            Write-UITextInverted $BorderCharacter
+            if((Get-UICursorPositionX) -ge (Get-UIConsoleWidth) - 1) {
+                Write-UITextInverted $BorderCharacter
+                break
+            }
+        }
+    }
+    Set-UICursorPosition -x $original_position_x -y $original_position_y
+}
+
+
 function Set-UICursorOffset {
     Param(
         [int]$x = 0,
