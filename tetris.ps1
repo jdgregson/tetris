@@ -10,6 +10,7 @@ $activePiece = $Null
 $nextPiece = $Null
 $lastRotation = 0
 $BACKGROUND_COLOR = (Get-Host).UI.RawUI.BackgroundColor
+$SCREEN_BOUND_RIGHT = 20
 $colors = "DarkBlue","DarkGreen","DarkRed","DarkMagenta","DarkYellow","Magenta","Blue"
 $pieces = @(
     @(
@@ -90,6 +91,22 @@ function Read-UserInput {
                     $activePiece.rotation = 1
                 }
             }
+            # Left Arrow
+            if($keyCode -eq 37) {
+                if($activePiece.Left -gt 1) {
+                    $activePiece.Left -= 1
+                } else {
+                    $activePiece.Left = 1
+                }
+            }
+            # Right Arrow
+            if($keyCode -eq 39) {
+                if($activePiece.Left -lt ((Get-UIConsoleWidth) - ($SCREEN_BOUND_RIGHT + 7))) {
+                    $activePiece.Left += 1
+                } else {
+                    $activePiece.Left -= 1
+                }
+            }
         }
     }
 }
@@ -139,8 +156,6 @@ function Draw-GamePiece {
     for($i=0; $i -lt 8; $i++) {
         if($p[$i] -eq 1) {
             Write-UIColoredText "  " -BackgroundColor $c
-        } else {
-            Write-UIText "  "
         }
         if((($i + 1) % $mod) -eq 0) {
             Set-UICursorPosition $StartX (++$StartY)
