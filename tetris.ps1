@@ -8,6 +8,7 @@ Import-Module $script_dir\psui1.psm1 -Force
 
 $activePiece = $Null
 $nextPiece = $Null
+$lastRotation = 0
 $BACKGROUND_COLOR = (Get-Host).UI.RawUI.BackgroundColor
 $colors = "DarkBlue","DarkGreen","DarkRed","DarkMagenta","DarkYellow","Magenta","Blue"
 $pieces = @(
@@ -97,8 +98,9 @@ function Read-UserInput {
 function Update-ActivePiece {
     if($activePiece) {
         $activePiece.top += 1
-        Draw-GamePiece (-($activePiece.piece)) $activePiece.rotation $activePiece.left ($activePiece.top - 1)
+        Draw-GamePiece -Erase $True $activePiece.piece $lastRotation $activePiece.left ($activePiece.top -1)
         Draw-GamePiece $activePiece.piece $activePiece.rotation $activePiece.left $activePiece.top
+        $script:lastRotation = $activePiece.rotation
     }
 }
 
@@ -120,16 +122,15 @@ function Draw-GamePiece {
         [int]$Piece,
         [int]$Rotate = 0,
         [int]$StartX = 0,
-        [int]$StartY = 0
+        [int]$StartY = 0,
+        [bool]$Erase = $False
     )
 
-    $erase = $False
     $p = $pieces[$Piece][$Rotate]
     $c = $colors[$p[8]]
     $mod = $p[9]
 
-    if($Piece -lt 0) {
-        $Piece = [math]::abs($Piece)
+    if($Erase) {
         $c = $BACKGROUND_COLOR
     }
 
