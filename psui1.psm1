@@ -6,6 +6,9 @@
 Set-Alias -Name "Pause-UI" -Value "Wait-AnyKey"
 $script:ui_menu_selected_line = 0
 $UI_CHAR_BORDER_BOTTOM = "_"
+$UIColors = "Black","DarkBlue","DarkGreen","DarkCyan","DarkRed","DarkMagenta",
+    "DarkYellow","Gray","DarkGray","Blue","Green","Cyan","Red","Magenta",
+    "Yellow","White"
 
 
 function Get-UIBlockChar {
@@ -387,4 +390,21 @@ function Update-UISelectedMenuItem {
     Write-UIMenuItem $old_title
     Set-UICursorPosition 0 ($script:ui_menu_selected_line + $direction)
     Write-UIMenuItem $new_title $True
+}
+
+
+function Get-UIRandomCharacter {
+    return ([char]$(Get-Random -Min 33 -Max 128))
+}
+
+
+function Get-UIRandomColor {
+    return $UIColors[$(Get-Random -Min 0 -Max $UIColors.Count)]
+}
+
+
+function Draw-ScreenBomb {
+    while($True) {
+        Write-Host (Get-UIRandomCharacter) -NoNewline -BackgroundColor (Get-UIRandomColor) -ForegroundColor (Get-UIRandomColor)
+    }
 }
