@@ -6,6 +6,9 @@
 $script_dir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $script_dir\psui1.psm1 -Force
 
+$activePiece = $Null
+$nextPiece = $Null
+$BACKGROUND_COLOR = (Get-Host).UI.RawUI.BackgroundColor
 $colors = "DarkBlue","DarkGreen","DarkRed","DarkMagenta","DarkYellow","Magenta","Blue"
 $pieces = @(
     @(
@@ -54,43 +57,51 @@ $pieces = @(
 
 function main {
     Draw-MainUI
-    Set-UICursorPosition 2 2
-
-    Draw-GamePiece 0 0 10 10
-    Draw-GamePiece 0 1 10 15
-    Draw-GamePiece 0 2 10 20
-    Draw-GamePiece 0 3 10 25
-
-    Draw-GamePiece 1 0 20 10
-    Draw-GamePiece 1 1 20 15
-    Draw-GamePiece 1 2 20 20
-    Draw-GamePiece 1 3 20 25
-
-    Draw-GamePiece 2 0 30 10
-    Draw-GamePiece 2 1 30 15
-    Draw-GamePiece 2 2 30 20
-    Draw-GamePiece 2 3 30 25
-
-    Draw-GamePiece 3 0 40 10
-    Draw-GamePiece 3 1 40 15
-    Draw-GamePiece 3 2 40 20
-    Draw-GamePiece 3 3 40 25
-
-    Draw-GamePiece 4 0 50 10
-    Draw-GamePiece 4 1 50 15
-    Draw-GamePiece 4 2 50 20
-    Draw-GamePiece 4 3 50 25
-
-    Draw-GamePiece 5 0 60 10
-    Draw-GamePiece 5 1 60 15
-    Draw-GamePiece 5 2 60 20
-    Draw-GamePiece 5 3 60 25
-
-
-    Wait-AnyKey
-    Clear-Host
-
+    while($True) {
+        $activePiece = if($nextPiece) {$nextPiece} else {(Get-RandomPiece)}
+        $nextPiece = (Get-RandomPiece)
+        Draw-GamePiece $nextPiece.piece 1 ((Get-UIConsoleWidth) - 12) ((Get-UIConsoleHeight) - 7)
+        while($True) {
+            Sleep 0.6
+            Read-UserInput
+            Update-ActivePiece
+        }
+    }
 }
+
+
+function Read-UserInput {
+    while($Host.UI.RawUI.KeyAvailable) {
+        $key = ($host.ui.RawUI.ReadKey("NoEcho,IncludeKeyUp")) -Split ","
+        $keyCode = $key[0]
+        $keyChar = $key[1]
+
+        # Print the key character and key code for debugging
+        Set-UICursorPosition -x ((Get-UIConsoleWidth) - 15) -y 1
+        if($keyCode -ne 13) {Write-Host "Key: $keyChar ($keyCode)"}
+
+        if($keyCode) {
+            # Up Arrow
+            if($keyCode -eq 38) {
+                if($activePiece.rotation -lt 3) {
+                    $activePiece.rotation += 1
+                } else {
+                    $activePiece.rotation = 1
+                }
+            }
+        }
+    }
+}
+
+
+function Update-ActivePiece {
+    if($activePiece) {
+        $activePiece.top += 1
+        Draw-GamePiece (-($activePiece.piece)) $activePiece.rotation $activePiece.left ($activePiece.top - 1)
+        Draw-GamePiece $activePiece.piece $activePiece.rotation $activePiece.left $activePiece.top
+    }
+}
+
 
 function Draw-MainUI {
     Reset-UIBufferSize
@@ -102,6 +113,7 @@ function Draw-MainUI {
     Write-UIBorder -StartY (Get-UIConsoleHeight - 3) -Width (Get-UIConsoleWidth)
 }
 
+
 function Draw-GamePiece {
     Param(
         [Parameter(Mandatory=$true)]
@@ -111,9 +123,16 @@ function Draw-GamePiece {
         [int]$StartY = 0
     )
 
+    $erase = $False
     $p = $pieces[$Piece][$Rotate]
     $c = $colors[$p[8]]
     $mod = $p[9]
+
+    if($Piece -lt 0) {
+        $Piece = [math]::abs($Piece)
+        $c = $BACKGROUND_COLOR
+    }
+
     $saved_position = (Get-Host).UI.RawUI.CursorPosition
     Set-UICursorPosition $StartX $StartY
     for($i=0; $i -lt 8; $i++) {
@@ -127,6 +146,16 @@ function Draw-GamePiece {
         }
     }
     (Get-Host).UI.RawUI.CursorPosition = $saved_position
+}
+
+
+function Get-RandomPiece {
+    return @{
+        piece = $(Get-Random -Min 0 -Max 7);
+        rotation = 0;
+        top = 1;
+        left = (((Get-UIConsoleWidth) - 22) / 2);
+    }
 }
 
 main
